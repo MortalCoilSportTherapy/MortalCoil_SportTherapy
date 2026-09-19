@@ -275,15 +275,78 @@ document.getElementById("feedbackForm").addEventListener("submit", async functio
   <div class="eyebrow">Client Reviews</div>
   <h2>What My Clients Say</h2>
 
-  <div class="card">
-    <div style="font-size:22px;letter-spacing:2px">★★★★★</div>
-    <p style="font-size:20px">
-      “Amazing, feel like I've got a new back — extra 30 years!”
-    </p>
-    <p class="muted">
-      <strong>Jord Kaye</strong><br>
-      60 Minute Treatment
-    </p>
+  <div id="reviewsList">
+    <p class="muted">Loading reviews...</p>
   </div>
-</section></body>
+</section>
+
+<script>
+async function loadReviews() {
+  const reviewsList = document.getElementById("reviewsList");
+
+  try {
+    const response = await fetch(
+      "https://mortalcoil-reviews.mortalcoilsporttherapy.workers.dev/reviews"
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not load reviews");
+    }
+
+    const reviews = await response.json();
+
+    reviewsList.innerHTML = "";
+
+    if (!reviews.length) {
+      reviewsList.innerHTML =
+        '<p class="muted">No reviews yet.</p>';
+      return;
+    }
+
+    reviews.forEach(function(review) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const stars = document.createElement("div");
+      stars.style.fontSize = "22px";
+      stars.style.letterSpacing = "2px";
+      stars.textContent = review.rating || "★★★★★";
+
+      const text = document.createElement("p");
+      text.style.fontSize = "20px";
+      text.textContent = '"' + review.review + '"';
+
+      const details = document.createElement("p");
+      details.className = "muted";
+
+      const name = document.createElement("strong");
+      name.textContent = review.name;
+
+      details.appendChild(name);
+      details.appendChild(document.createElement("br"));
+
+      if (review.treatment) {
+        details.appendChild(
+          document.createTextNode(review.treatment)
+        );
+      }
+
+      card.appendChild(stars);
+      card.appendChild(text);
+      card.appendChild(details);
+
+      reviewsList.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    reviewsList.innerHTML =
+      '<p class="muted">Reviews are temporarily unavailable.</p>';
+  }
+}
+
+loadReviews();
+</script>
+</body>
 </html>
